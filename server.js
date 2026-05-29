@@ -2,7 +2,9 @@ import { createServer } from "http";
 import next from "next";
 import { Server } from "socket.io";
 
-const app = next({ dev: true });
+const dev = process.env.NODE_ENV !== "production";
+
+const app = next({ dev });
 const handler = app.getRequestHandler();
 
 app.prepare().then(() => {
@@ -22,9 +24,15 @@ app.prepare().then(() => {
     socket.on("patient-update", (data) => {
       io.emit("patient-live-data", data);
     });
+
+    socket.on("disconnect", () => {
+      console.log("disconnected:", socket.id);
+    });
   });
 
-  httpServer.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+  const PORT = process.env.PORT || 3000;
+
+  httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
 });
